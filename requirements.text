@@ -1,3 +1,6 @@
-yfinance
+yfinance==0.2.40
 pandas
 numpy
+requests
+lxml
+html5lib
