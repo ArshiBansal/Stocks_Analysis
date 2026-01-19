@@ -9,3 +9,12 @@ streamlit
 scikit-learn
 matplotlib
 seaborn
+pkg_resources
+datetime
+sklearn
+tensorflow
+keras
+pmdarima
+statsmodels
+xgboost
+prophet
