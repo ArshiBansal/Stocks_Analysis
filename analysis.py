@@ -6,9 +6,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import pkg_resources
+
 import streamlit as st
-st.write(pkg_resources.working_set.by_key.keys())
+
 
 # Models
 from pmdarima import auto_arima
