@@ -12,3 +12,4 @@ statsmodels
 requests
 lxml
 html5lib
+statsmodels

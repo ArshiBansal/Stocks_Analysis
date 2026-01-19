@@ -11,7 +11,7 @@ import streamlit as st
 
 
 # Models
-from pmdarima import auto_arima
+from statsmodels.tsa.arima.model import ARIMA
 from prophet import Prophet
 from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from xgboost import XGBRegressor
@@ -205,13 +205,20 @@ with tab3:
             backtest_data = {}
 
             # ARIMA
-            with st.expander("1. ARIMA"):
-                model = auto_arima(df['Close'], seasonal=False, stepwise=True, suppress_warnings=True, trace=False)
-                pred = model.predict(n_periods=len(df)//5)
-                actual = df['Close'].iloc[-len(pred):]
-                backtest_data['ARIMA'] = (df['Date'].iloc[-len(pred):].values, actual.values, pred)
-                models['ARIMA'] = model
-                st.success("ARIMA trained")
+            # ARIMA (Cloud-safe using statsmodels)
+        with st.expander("1. ARIMA"):
+            series = df['Close']
+            model = ARIMA(series, order=(5, 1, 0))
+            fitted = model.fit()
+
+            steps = len(series) // 5
+            pred = fitted.forecast(steps=steps)
+            actual = series.iloc[-steps:]
+
+            backtest_data['ARIMA'] = (df['Date'].iloc[-steps:].values, actual.values, pred.values)
+            models['ARIMA'] = fitted
+            st.success("ARIMA trained")
+
 
             # Prophet
             with st.expander("2. Prophet"):
