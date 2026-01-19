@@ -4,3 +4,8 @@ numpy
 requests
 lxml
 html5lib
+plotly
+streamlit
+scikit-learn
+matplotlib
+seaborn
