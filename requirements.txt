@@ -7,9 +7,10 @@ scikit-learn
 pmdarima
 prophet
 xgboost
-tensorflow
+tensorflow-cpu
 statsmodels
 requests
 lxml
 html5lib
 statsmodels
+cmdstanpy
