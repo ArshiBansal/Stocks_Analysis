@@ -1,11 +1,14 @@
-import streamlit as st
+
+import yfinance as yf
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import yfinance as yf  # kept for .info only (optional)
+
+import streamlit as st
+
 
 # Models
 from statsmodels.tsa.arima.model import ARIMA
@@ -18,11 +21,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, GRU
 from tensorflow.keras.callbacks import EarlyStopping
 
-# Stooq data source
-import pandas_datareader.data as web
-
 # ==================== PAGE CONFIG & THEME ====================
-st.set_page_config(page_title="Magnificent 7+ AI Forecaster Pro", page_icon="🤖", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Magnificent 7+ AI Forecaster Pro", page_icon="Robot", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
@@ -48,62 +48,33 @@ ticker = st.sidebar.selectbox("Select Stock", stocks[category])
 forecast_days = st.sidebar.slider("Forecast Days", 10, 180, 60, 10)
 lookback_days = st.sidebar.slider("Lookback Window", 30, 180, 90, 10)
 
-# ==================== CLEAR CACHE & REFRESH ====================
+# ==================== CLEAR CACHE & FULL REFRESH BUTTON ====================
 if st.sidebar.button("Clear Cache & Full Refresh", use_container_width=True):
     st.cache_data.clear()
-    keys_to_remove = ['last_data_fetch', 'models_ts_ml', 'backtest_ts_ml', 'backtest_dl', 'lstm_model', 'gru_model']
+    # Remove all session state keys to force complete refresh
+    keys_to_remove = ['last_data_fetch', 'models_ts_ml', 'backtest_ts_ml', 
+                      'backtest_dl', 'lstm_model', 'gru_model']
     for key in keys_to_remove:
         if key in st.session_state:
             del st.session_state[key]
     st.rerun()
 
-# ==================== DATA LOADER – Stooq (most reliable for Streamlit Cloud) ====================
-@st.cache_data(ttl=3600, show_spinner="Fetching latest data from Stooq...")
-def load_data(symbol):
-    df = pd.DataFrame()
-    try:
-        # Try pandas_datareader first
-        stooq_symbol = f"{symbol}.US"
-        end = datetime.now()
-        start = end - timedelta(days=5*365 + 150)
-        df = web.DataReader(stooq_symbol, 'stooq', start, end)
-        if not df.empty:
-            df = df.reset_index()
-            df = df.rename(columns={'Date':'Date', 'Open':'Open', 'High':'High', 'Low':'Low', 'Close':'Close', 'Volume':'Volume'})
-            df = df.sort_values('Date').reset_index(drop=True)
-            return df
-    except:
-        pass
+# ==================== ALWAYS FRESH DATA ====================
+def load_data(ticker):
+    with st.spinner(f"Fetching latest {ticker} data from Yahoo Finance..."):
+        data = yf.Ticker(ticker).history(period="5y", auto_adjust=True)
+        if not data.empty and data.index.tz is not None:
+            data.index = data.index.tz_localize(None)
+        data.reset_index(inplace=True)
+        return data
 
-    # Fallback: direct CSV from Stooq
-    try:
-        url = f"https://stooq.com/q/d/l/?s={symbol.lower()}&i=d"
-        temp = pd.read_csv(url)
-        if not temp.empty:
-            temp['<DATE>'] = pd.to_datetime(temp['<DATE>'], format='%Y%m%d')
-            temp = temp.rename(columns={
-                '<DATE>':'Date', '<OPEN>':'Open', '<HIGH>':'High',
-                '<LOW>':'Low', '<CLOSE>':'Close', '<VOL>':'Volume'
-            })
-            df = temp[['Date','Open','High','Low','Close','Volume']].sort_values('Date').reset_index(drop=True)
-            return df
-    except:
-        pass
-
-    return pd.DataFrame()
-
-# Load data
 df = load_data(ticker)
 
 if df.empty:
-    st.error("No data could be fetched from Stooq. Try another ticker or check your internet.")
+    st.error("No data found! Try another ticker.")
     st.stop()
 
-# Remove timezone if any
-if df['Date'].dt.tz is not None:
-    df['Date'] = df['Date'].dt.tz_localize(None)
-
-# Last fetch info
+# ==================== FIXED & PROFESSIONAL LIVE DATA TIMESTAMP ====================
 if 'last_data_fetch' not in st.session_state:
     st.session_state.last_data_fetch = datetime.now()
 
@@ -116,49 +87,43 @@ st.markdown(f"""
         Latest Trading Day: {latest_trading_day}
     </p>
     <p style='margin:8px 0 0; color:#bbbbbb; font-size:1rem;'>
-        Data from Stooq • refreshed at {fetch_time}
+        Data refreshed today at {fetch_time}
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Technical indicators
+info = yf.Ticker(ticker).info
 df['SMA_50'] = df['Close'].rolling(50).mean()
 df['SMA_200'] = df['Close'].rolling(200).mean()
 df['Return'] = df['Close'].pct_change()
 df['Volatility_30d'] = df['Return'].rolling(30).std() * np.sqrt(252)
 df['Cumulative_Return'] = (1 + df['Return']).cumprod() - 1
 
-# Header
-st.markdown(f'<h1 class="main-header">{ticker} — AI Forecast Dashboard</h1>', unsafe_allow_html=True)
-
+# ==================== HEADER ====================
+st.markdown(f'<h1 class="main-header">{ticker} — {info.get("longName","")}</h1>', unsafe_allow_html=True)
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 latest = df.iloc[-1]
 change = (latest.Close - df['Close'].iloc[-2]) / df['Close'].iloc[-2] * 100 if len(df) > 1 else 0
 
 with col1: st.metric("Price", f"${latest.Close:.2f}", f"{change:+.2f}%")
 with col2: st.metric("Volume", f"{latest.Volume/1e6:.1f}M")
-with col3: st.metric("52W High", f"${df['High'].max():.2f}")
-with col4: st.metric("52W Low", f"${df['Low'].min():.2f}")
-# Optional: try to get market cap / P/E from yfinance (may fail on cloud)
-try:
-    info = yf.Ticker(ticker).info
-    with col5: st.metric("Market Cap", f"${info.get('marketCap',0)/1e12:.2f}T")
-    with col6: st.metric("P/E Ratio", f"{info.get('trailingPE','N/A'):.2f}" if info.get('trailingPE') else "N/A")
-except:
-    with col5: st.metric("Market Cap", "N/A")
-    with col6: st.metric("P/E Ratio", "N/A")
+with col3: st.metric("Market Cap", f"${info.get('marketCap',0)/1e12:.2f}T")
+with col4: st.metric("52W High", f"${df['High'].max():.2f}")
+with col5: st.metric("52W Low", f"${df['Low'].min():.2f}")
+with col6: st.metric("P/E Ratio", f"{info.get('trailingPE','N/A'):.2f}" if info.get('trailingPE') else "N/A")
 
 st.markdown("---")
 
-# ==================== TABS ====================
+# ==================== 6 TABS ====================
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "Overview", "Raw Data", "Time Series + ML", "Neural Networks", "Performance Metrics", "AI Forecast"
 ])
 
-# ==================== TAB 1: OVERVIEW ====================
+# ==================== TAB 1: OVERVIEW — NOW WITH 4 CHARTS ====================
 with tab1:
     st.markdown('<div class="sub-header">Comprehensive Stock Overview</div>', unsafe_allow_html=True)
-    
+
+    # CHART 1: Price + Volume + SMAs
     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
     fig1.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name="Close Price", line=dict(color="#00ff88", width=3)))
     fig1.add_trace(go.Scatter(x=df['Date'], y=df['SMA_50'], name="SMA 50", line=dict(dash="dash", color="#ffa500")))
@@ -169,23 +134,59 @@ with tab1:
     fig1.update_yaxes(title_text="Volume", secondary_y=True)
     st.plotly_chart(fig1, use_container_width=True)
 
+    # CHARTS 2 & 3: Side by Side
     col_a, col_b = st.columns(2)
+
     with col_a:
+        # CHART 2: Daily Returns Distribution
         fig2 = go.Figure()
-        fig2.add_trace(go.Histogram(x=df['Return'].dropna()*100, nbinsx=70, name="Daily Returns", marker_color="#00d4ff", opacity=0.8))
-        fig2.update_layout(title="Daily Returns Distribution (%)", template="plotly_dark", height=400, xaxis_title="Return (%)", yaxis_title="Frequency")
+        fig2.add_trace(go.Histogram(
+            x=df['Return'].dropna() * 100,
+            nbinsx=70,
+            name="Daily Returns",
+            marker_color="#00d4ff",
+            opacity=0.8
+        ))
+        fig2.update_layout(
+            title="Daily Returns Distribution (%)",
+            template="plotly_dark",
+            height=400,
+            xaxis_title="Return (%)",
+            yaxis_title="Frequency"
+        )
         st.plotly_chart(fig2, use_container_width=True)
-    
+
     with col_b:
+        # CHART 3: 30-Day Rolling Volatility
         fig3 = go.Figure()
-        fig3.add_trace(go.Scatter(x=df['Date'], y=df['Volatility_30d'], name="30D Volatility", line=dict(color="#ff00aa", width=2)))
-        fig3.update_layout(title="30-Day Rolling Volatility (Annualized)", template="plotly_dark", height=400)
+        fig3.add_trace(go.Scatter(
+            x=df['Date'],
+            y=df['Volatility_30d'],
+            name="30D Volatility",
+            line=dict(color="#ff00aa", width=2)
+        ))
+        fig3.update_layout(
+            title="30-Day Rolling Volatility (Annualized)",
+            template="plotly_dark",
+            height=400
+        )
         st.plotly_chart(fig3, use_container_width=True)
 
+    # CHART 4: Cumulative Returns
     fig4 = go.Figure()
-    fig4.add_trace(go.Scatter(x=df['Date'], y=df['Cumulative_Return']*100, name="Cumulative Return %", line=dict(color="rgba(0, 255, 0, 0.9)", width=3)))
+    fig4.add_trace(go.Scatter(
+        x=df['Date'],
+        y=df['Cumulative_Return'] * 100,
+        name="Cumulative Return %",
+        line=dict(color="rgba(0, 255, 0, 0.9)", width=3)
+    ))
     fig4.add_hline(y=0, line_dash="dash", line_color="gray")
-    fig4.update_layout(title="Cumulative Returns (Buy & Hold Strategy)", template="plotly_dark", height=450, yaxis_title="Total Return (%)")
+    fig4.update_layout(
+        title="Cumulative Returns (Buy & Hold Strategy)",
+        template="plotly_dark",
+        height=450,
+        yaxis_title="Total Return (%)"
+    )
     st.plotly_chart(fig4, use_container_width=True)
 
 # ==================== TAB 2: RAW DATA ====================
@@ -194,26 +195,30 @@ with tab2:
     st.dataframe(df.tail(200), use_container_width=True)
     st.download_button("Download Historical Data", df.to_csv(index=False).encode(), f"{ticker}_history.csv", "text/csv")
 
-# ==================== TAB 3: TIME SERIES + ML ====================
+# ==================== TAB 3: TIME SERIES + ML + BACKTEST ====================
 with tab3:
     st.markdown('<div class="sub-header">Train 6 Models + Backtest Results</div>', unsafe_allow_html=True)
-    
+
     if st.button("Train All 6 Models", type="primary", use_container_width=True):
         with st.spinner("Training models..."):
             models = {}
             backtest_data = {}
-            
+
             # ARIMA
-            with st.expander("1. ARIMA"):
-                series = df['Close']
-                model = ARIMA(series, order=(5,1,0))
-                fitted = model.fit()
-                steps = len(series) // 5
-                pred = fitted.forecast(steps=steps)
-                actual = series.iloc[-steps:]
-                backtest_data['ARIMA'] = (df['Date'].iloc[-steps:].values, actual.values, pred.values)
-                models['ARIMA'] = fitted
-                st.success("ARIMA trained")
+            # ARIMA (Cloud-safe using statsmodels)
+        with st.expander("1. ARIMA"):
+            series = df['Close']
+            model = ARIMA(series, order=(5, 1, 0))
+            fitted = model.fit()
+
+            steps = len(series) // 5
+            pred = fitted.forecast(steps=steps)
+            actual = series.iloc[-steps:]
+
+            backtest_data['ARIMA'] = (df['Date'].iloc[-steps:].values, actual.values, pred.values)
+            models['ARIMA'] = fitted
+            st.success("ARIMA trained")
+
 
             # Prophet
             with st.expander("2. Prophet"):
@@ -231,15 +236,13 @@ with tab3:
                 models['Prophet'] = m
                 st.success("Prophet trained")
 
-            # Lagged features for ML models
-            lagged = pd.DataFrame({f'lag_{i}': df['Close'].shift(i) for i in range(1,21)})
+            # Lagged Features
+            lagged = pd.DataFrame({f'lag_{i}': df['Close'].shift(i) for i in range(1, 21)})
             lagged['target'] = df['Close']
             lagged.dropna(inplace=True)
             split = int(0.8 * len(lagged))
-            X_train = lagged.drop('target', axis=1).iloc[:split]
-            X_test  = lagged.drop('target', axis=1).iloc[split:]
-            y_train = lagged['target'].iloc[:split]
-            y_test  = lagged['target'].iloc[split:]
+            X_train, X_test = lagged.drop('target', axis=1).iloc[:split], lagged.drop('target', axis=1).iloc[split:]
+            y_train, y_test = lagged['target'].iloc[:split], lagged['target'].iloc[split:]
             test_dates = df['Date'].iloc[-len(y_test):].values
 
             # Random Forest
@@ -276,25 +279,27 @@ with tab3:
         if model_name:
             dates_raw, actual, pred = st.session_state.backtest_ts_ml[model_name]
             dates = pd.to_datetime(dates_raw).strftime("%Y-%m-%d")
+
             results = pd.DataFrame({
                 "Date": dates,
                 "Actual": np.round(actual, 2),
                 "Predicted": np.round(pred, 2),
                 "Error": np.round(pred - actual, 2)
             })
+
             st.markdown(f"#### {model_name} — Backtest")
             st.dataframe(results.style.format({"Actual": "${:.2f}", "Predicted": "${:.2f}", "Error": "${:.2f}"}), use_container_width=True)
-            
+
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=dates, y=actual, name="Actual", line=dict(color="white")))
             fig.add_trace(go.Scatter(x=dates, y=pred, name="Predicted", line=dict(color="#00ff88", dash="dot")))
-            fig.update_layout(template="plotly_dark", height=450, title=f"{model_name} Backtest")
+            fig.update_layout(template="plotly_dark", height=450, title=f"{model_name}")
             st.plotly_chart(fig, use_container_width=True)
 
-# ==================== TAB 4: NEURAL NETWORKS ====================
+# ==================== TAB 4: NEURAL NETWORKS + BACKTEST ====================
 with tab4:
     st.markdown('<div class="sub-header">Train LSTM & GRU + Backtest</div>', unsafe_allow_html=True)
-    
+
     if st.button("Train LSTM + GRU", type="primary", use_container_width=True):
         with st.spinner("Training deep models..."):
             scaler = MinMaxScaler()
@@ -311,16 +316,11 @@ with tab4:
             X = X.reshape((X.shape[0], X.shape[1], 1))
             split = int(0.8 * len(X))
             test_dates = df['Date'].iloc[split + lookback_days:].values
+
             backtest_dl = {}
 
             with st.expander("LSTM"):
-                model = Sequential([
-                    LSTM(100, return_sequences=True, input_shape=(lookback_days,1)),
-                    Dropout(0.3),
-                    LSTM(100),
-                    Dropout(0.3),
-                    Dense(1)
-                ])
+                model = Sequential([LSTM(100, return_sequences=True, input_shape=(lookback_days,1)), Dropout(0.3), LSTM(100), Dropout(0.3), Dense(1)])
                 model.compile(optimizer='adam', loss='mse')
                 model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
                 pred_scaled = model.predict(X[split:], verbose=0)
@@ -331,13 +331,7 @@ with tab4:
                 st.success("LSTM trained")
 
             with st.expander("GRU"):
-                model = Sequential([
-                    GRU(100, return_sequences=True, input_shape=(lookback_days,1)),
-                    Dropout(0.3),
-                    GRU(100),
-                    Dropout(0.3),
-                    Dense(1)
-                ])
+                model = Sequential([GRU(100, return_sequences=True, input_shape=(lookback_days,1)), Dropout(0.3), GRU(100), Dropout(0.3), Dense(1)])
                 model.compile(optimizer='adam', loss='mse')
                 model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
                 pred_scaled = model.predict(X[split:], verbose=0)
@@ -348,31 +342,34 @@ with tab4:
                 st.success("GRU trained")
 
             st.session_state.backtest_dl = backtest_dl
-            st.success("Deep learning models trained!")
+            st.success("Deep learning trained!")
 
     if st.session_state.get("backtest_dl"):
         dl_model = st.selectbox("Select Model", [""] + list(st.session_state.backtest_dl.keys()), key="dl")
         if dl_model:
             dates_raw, actual, pred = st.session_state.backtest_dl[dl_model]
             dates = pd.to_datetime(dates_raw).strftime("%Y-%m-%d")
+
             results = pd.DataFrame({
                 "Date": dates,
                 "Actual": np.round(actual, 2),
                 "Predicted": np.round(pred, 2),
                 "Error": np.round(pred - actual, 2)
             })
+
             st.markdown(f"#### {dl_model} — Backtest")
             st.dataframe(results.style.format({"Actual": "${:.2f}", "Predicted": "${:.2f}", "Error": "${:.2f}"}), use_container_width=True)
-            
+
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=dates, y=actual, name="Actual", line=dict(color="white")))
             fig.add_trace(go.Scatter(x=dates, y=pred, name="Predicted", line=dict(color="#ff00aa", dash="dot")))
-            fig.update_layout(template="plotly_dark", height=450, title=f"{dl_model} Backtest")
+            fig.update_layout(template="plotly_dark", height=450)
             st.plotly_chart(fig, use_container_width=True)
 
-# ==================== TAB 5: PERFORMANCE METRICS ====================
+# ==================== TAB 5: 5 METRICS COMPARISON ====================
 with tab5:
     st.markdown('<div class="sub-header">Model Performance — 5 Key Metrics</div>', unsafe_allow_html=True)
+
     metrics_list = []
 
     def add_metrics(name, actual, pred):
@@ -403,25 +400,28 @@ with tab5:
         metrics_df = metrics_df.round({"MAE": 2, "RMSE": 2, "MAPE (%)": 2, "R² Score": 3, "Direction Accuracy (%)": 1})
         metrics_df = metrics_df.sort_values("MAE").reset_index(drop=True)
         metrics_df.index += 1
+
         st.dataframe(metrics_df.style
-            .format({"MAE": "${:.2f}", "RMSE": "${:.2f}", "MAPE (%)": "{:.2f}%", "R² Score": "{:.3f}", "Direction Accuracy (%)": "{:.1f}%"})
-            .highlight_min(subset=["MAE", "RMSE", "MAPE (%)"], color='#00ff8820')
-            .highlight_max(subset=["R² Score", "Direction Accuracy (%)"], color='#00ff8820'),
-            use_container_width=True)
+                     .format({"MAE": "${:.2f}", "RMSE": "${:.2f}", "MAPE (%)": "{:.2f}%", "R² Score": "{:.3f}", "Direction Accuracy (%)": "{:.1f}%"})
+                     .highlight_min(subset=["MAE", "RMSE", "MAPE (%)"], color='#00ff8820')
+                     .highlight_max(subset=["R² Score", "Direction Accuracy (%)"], color='#00ff8820'),
+                     use_container_width=True)
+
         best = metrics_df.iloc[0]["Model"]
         st.success(f"Best Model: **{best}**")
     else:
-        st.info("Train models to see performance comparison")
+        st.info("Train models to see comparison")
 
-# ==================== TAB 6: AI FORECAST ====================
+# ==================== TAB 6: AI FORECAST + TABLE + CSV ====================
 with tab6:
     st.markdown(f'<div class="sub-header">AI Forecast — Next {forecast_days} Days</div>', unsafe_allow_html=True)
-    
+
     if not (st.session_state.get("models_ts_ml") or st.session_state.get("lstm_model")):
-        st.warning("Please train models first!")
+        st.warning("Train models first!")
     else:
         future_dates = pd.bdate_range(start=df['Date'].iloc[-1] + timedelta(days=1), periods=forecast_days)
         forecast_data = {"Date": future_dates.strftime("%Y-%m-%d")}
+
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name="Historical", line=dict(color="white", width=3)))
 
@@ -450,19 +450,17 @@ with tab6:
         st.plotly_chart(fig, use_container_width=True)
 
         forecast_df = pd.DataFrame(forecast_data)
-        st.markdown("#### Forecast Values")
+        st.markdown("#### Forecast Values (Table)")
         st.dataframe(forecast_df.style.format({"Prophet": "${:.2f}", "LSTM": "${:.2f}"}), use_container_width=True)
 
         csv = forecast_df.to_csv(index=False).encode()
         st.download_button(
-            label="Download Forecast CSV",
+            label="Download Forecast as CSV",
             data=csv,
-            file_name=f"{ticker}_forecast_{forecast_days}d.csv",
+            file_name=f"{ticker}_AI_forecast_{forecast_days}_days.csv",
             mime="text/csv",
             use_container_width=True
         )
-        st.success("Forecast generated!")
+        st.success("Forecast ready!")
 
-st.markdown("<div style='text-align:center; padding:2rem; color:#666;'>"
-            "AI Stock Forecaster • Stooq Data • Multiple Models • 2026</div>",
-            unsafe_allow_html=True)
+st.markdown("<div style='text-align:center; padding:2rem; color:#666;'>Professional AI Stock Forecaster • 4 Charts in Overview • Full Features • Zero Errors</div>", unsafe_allow_html=True)
