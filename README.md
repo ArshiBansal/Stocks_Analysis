@@ -193,6 +193,8 @@ No model is trusted by default.<br>
 They all <b>earn</b> credibility — or get roasted by live data.
 </div>
 
+<br>
+
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
 </p>
@@ -200,24 +202,27 @@ They all <b>earn</b> credibility — or get roasted by live data.
 <!-- Features -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Features%3A+what+this+system+actually+does"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=This+is+what+happens+after+%22Run+All%22+finishes...;Features+weren%E2%80%99t+built+for+slides+%E2%80%94+they+were+built+to+survive."
+    alt="Features"
   />
 </div>
 
 <ul>
-  <li>Dual execution modes: <b>offline research</b> and <b>live forecasting</b></li>
-  <li>Multiple model families competing on identical data</li>
-  <li>Rolling forecasts instead of one-shot predictions</li>
-  <li>Backtesting with consistent, comparable metrics</li>
-  <li>Regime-aware analysis (markets are not stationary, unfortunately)</li>
-  <li>Interactive dashboard for side-by-side model evaluation</li>
-  <li>Downloadable forecasts for accountability and post-mortems</li>
+  <li>(￣︶￣)ゞ Dual execution modes: <b>offline research</b> for thinking, <b>live forecasting</b> for consequences</li>
+  <li>(ಠ‿ಠ) Multiple model families competing on the <i>same</i> data — no special treatment</li>
+  <li>(•̀ᴗ•́)و Rolling forecasts instead of one heroic prediction and a prayer</li>
+  <li>(⌐■_■) Backtesting with consistent, comparable metrics — excuses not included</li>
+  <li>(¬‿¬) Regime-aware analysis (markets refuse to stay stationary)</li>
+  <li>(☞ﾟヮﾟ)☞ Interactive dashboard for side-by-side model judgment</li>
+  <li>(ಥ﹏ಥ) Downloadable forecasts for accountability, audits, and post-mortems</li>
 </ul>
 
-<p>
+<div>
 If a model fails, it fails <b>publicly</b>.<br>
-If it succeeds, it must keep doing so.
-</p>
+If it succeeds, it must keep proving it.
+</div>
+
+<br>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
@@ -226,22 +231,25 @@ If it succeeds, it must keep doing so.
 <!-- Technologies Used -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Technologies+Used%3A+chosen+with+intent%2C+not+hype"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=22&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=The+stack+wasn%E2%80%99t+chosen+to+look+modern...;It+favors+reliability+over+novelty+%E2%80%94+boring+where+it+works%2C+powerful+where+it+matters."
+    alt="Technologies Used"
   />
 </div>
 
 <ul>
-  <li><b>Python</b> — because production matters</li>
-  <li><b>Pandas / NumPy</b> — data sanity enforcement</li>
-  <li><b>Scikit-learn</b> — classical ML that still holds up</li>
-  <li><b>Statsmodels</b> — ARIMA without magic</li>
-  <li><b>Prophet</b> — controlled seasonality, not blind optimism</li>
-  <li><b>TensorFlow / Keras</b> — deep learning where it earns its keep</li>
-  <li><b>XGBoost</b> — because trees still win fights</li>
-  <li><b>Plotly</b> — interactive visuals with accountability</li>
-  <li><b>Streamlit</b> — deployment without pretending this is a startup</li>
-  <li><b>yfinance</b> — live data, live consequences</li>
+  <li>Because “just guessing” isn’t a strategy, Python comes to the rescue</li>
+  <li>Cleaning data shouldn’t feel like archaeology, which is where Pandas and NumPy shine</li>
+  <li>Classical wisdom still works even if everyone chases shiny new algorithms, thanks to Scikit-learn</li>
+  <li>Time series deserve honesty and no magic tricks, that’s why Statsmodels is here</li>
+  <li>Seasonality isn’t a horoscope, Prophet helps keep it under control</li>
+  <li>Deep learning should earn its keep and not just look cool in slides, enter TensorFlow and Keras</li>
+  <li>Trees can still settle debates without a chainsaw, which is why XGBoost wins</li>
+  <li>Visuals shouldn’t require a crystal ball, Plotly makes them interactive and accountable</li>
+  <li>Deploying apps shouldn’t feel like a startup audition, Streamlit keeps it simple and working</li>
+  <li>Live data comes with real consequences, yfinance brings it straight to you</li>
 </ul>
+
+<br>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
@@ -250,25 +258,28 @@ If it succeeds, it must keep doing so.
 <!-- Data Requirements -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Data+Requirements%3A+no+excuses+edition"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=950&height=120&multiline=true&repeat=false&lines=Offline+for+rehearsal,+static+history+for+experiments.;Live+for+reality+checks,+real-time+feeds+for+accountability."
+    alt="Data Requirements"
   />
 </div>
 
 <p>
-This system intentionally avoids complex dependencies.
+This system proudly avoids overcomplication. Because why juggle 17 APIs and a database when all you really need are some numbers and a prayer?
 </p>
 
 <ul>
-  <li><b>Offline Mode:</b> Historical Kaggle stock datasets</li>
-  <li><b>Live Mode:</b> Real-time OHLC data via <b>yfinance</b></li>
+  <li><b>Offline Mode:</b> Historical Kaggle stock datasets — perfect for pretending you can predict the past.</li>
+  <li><b>Live Mode:</b> Real-time OHLC data via <b>yfinance</b> — for when reality likes to smack you in the face.</li>
 </ul>
 
 <p>
 No databases.<br>
 No API keys.<br>
-No scraped nonsense.<br>
-Just prices and time.
+No scraping chaos.<br>
+Just raw prices… and the cold, unforgiving march of time.
 </p>
+
+<br>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
@@ -277,22 +288,25 @@ Just prices and time.
 <!-- User Guide -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=User+Guide%3A+how+to+run+this+without+breaking+it"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=How+to+run+this+without+calling+IT+(or+crying).;How+to+poke+the+beast+without+getting+eaten+alive."
+    alt="User Guide"
   />
 </div>
 
 <ol>
-  <li>Install dependencies using <b>pip install -r requirements.txt</b></li>
-  <li>Launch the app: <b>streamlit run app.py</b></li>
-  <li>Select stocks and forecasting horizon</li>
-  <li>Run models and compare forecasts live</li>
-  <li>Download predictions if you want proof later</li>
+  <li>Install dependencies with <b>pip install -r requirements.txt</b> — because the code won’t do itself.</li>
+  <li>Launch the app: <b>streamlit run app.py</b> — enter at your own risk.</li>
+  <li>Pick your stocks and choose a forecasting horizon — may the odds be ever in your favor.</li>
+  <li>Run the models and watch them duke it out with reality — popcorn optional.</li>
+  <li>Download predictions if you want a receipt for your eventual bragging rights (or regrets).</li>
 </ol>
 
 <p>
 That’s it.<br>
-If it breaks, the market probably did that — not the code.
+If it breaks, don’t blame us — the market probably threw a tantrum first.
 </p>
+
+<br>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
