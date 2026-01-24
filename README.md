@@ -157,40 +157,41 @@ Not historical comfort blankets.
 <!-- Models Used -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Models+Used%3A+trust+issues+included"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Each+model+walked+in+with+confidence...;Accuracy+had+to+be+earned+%E2%80%94+the+market+picked+the+survivors."
+    alt="Models Used"
   />
 </div>
 
-<p><b>Time Series</b></p>
+<div><b>(⌐■_■) Time Series</b></div>
 <ul>
-  <li>ARIMA</li>
-  <li>Prophet (<i>with custom seasonality, not blind faith</i>)</li>
+  <li><b>ARIMA</b> — assumes the future behaves if you difference it enough</li>
+  <li><b>Prophet</b> — sees seasonality everywhere <i>(custom holidays applied, faith optional)</i></li>
 </ul>
 
-<p><b>Machine Learning</b></p>
+<div><b>(ಠ‿ಠ) Machine Learning</b></div>
 <ul>
-  <li>Random Forest Regressor</li>
-  <li>XGBoost</li>
-  <li>Lag-based supervised pipelines</li>
+  <li><b>Random Forest Regressor</b> — asks hundreds of trees and averages the panic</li>
+  <li><b>XGBoost</b> — wins competitions, demands careful handling, breaks easily</li>
+  <li><b>Lag-based pipelines</b> — yesterday called, it wants today to make sense</li>
 </ul>
 
-<p><b>Deep Learning</b></p>
+<div><b>(•̀ᴗ•́)و Deep Learning</b></div>
 <ul>
-  <li>LSTM</li>
-  <li>GRU</li>
-  <li>Sliding-window sequence forecasting</li>
+  <li><b>LSTM</b> — remembers long-term patterns, forgets why training is slow</li>
+  <li><b>GRU</b> — LSTM’s efficient sibling with fewer emotional gates</li>
+  <li><b>Sliding windows</b> — teaches neural nets by repeatedly showing them the past</li>
 </ul>
 
-<p><b>Unsupervised Learning</b></p>
+<div><b>(¬‿¬) Unsupervised Learning</b></div>
 <ul>
-  <li>K-Means (market regime clustering)</li>
-  <li>Isolation Forest (anomaly detection)</li>
+  <li><b>K-Means</b> — confidently clusters markets into exactly K moods</li>
+  <li><b>Isolation Forest</b> — quietly flags chaos while pretending it’s normal</li>
 </ul>
 
-<p>
-No single model is trusted.<br>
-They all <b>earn</b> their credibility — or lose it publicly.
-</p>
+<div>
+No model is trusted by default.<br>
+They all <b>earn</b> credibility — or get roasted by live data.
+</div>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
