@@ -116,13 +116,13 @@ Just models, markets, and receipts.
   />
 </div>
 
-<div align="left"><b>🧠 Mode 1 — Research & Experimentation (Jupyter Notebook)</b></div>
+<div><b>(￣︶￣)ゞ Mode 1 — Research & Experimentation (Jupyter Notebook)</b></div>
 
 <ul>
   <li>Historical <b>Kaggle stock datasets</b></li>
-  <li>Exploratory Data Analysis & financial statistics</li>
-  <li>Feature engineering with solid justification</li>
-  <li>Market regime detection</li>
+  <li>Exploratory data analysis with financial statistics</li>
+  <li>Feature engineering with clear, defensible justification</li>
+  <li>Market regime identification</li>
   <li>Model benchmarking without cherry-picking</li>
 </ul>
 
@@ -131,13 +131,15 @@ Built for <b>reproducibility</b>.<br>
 Not vibes.
 </div>
 
-<div align="right"><b>🚀 Mode 2 — Live Forecasting Engine (Streamlit)</b></div>
+<br>
+
+<div><b>(☞ﾟヮﾟ)☞ Mode 2 — Live Forecasting Engine (Streamlit)</b></div>
 
 <ul>
-  <li>Live prices via <b>yfinance</b></li>
+  <li>Live market prices via <b>yfinance</b></li>
   <li>On-demand model execution</li>
-  <li>Rolling forecasts & backtesting</li>
-  <li>Interactive model comparison (models roast each other)</li>
+  <li>Rolling forecasts with continuous backtesting</li>
+  <li>Interactive model comparison (models openly roast each other)</li>
   <li>Downloadable predictions (for receipts)</li>
 </ul>
 
