@@ -315,22 +315,25 @@ If it breaks, don’t blame us — the market probably threw a tantrum first.
 <!-- Future Improvements -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Future+Improvements%3A+things+markets+will+force+eventually"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Coming+Soon:+Things+our+models+politely+begged+for...;and+the+market+screamed+at"
+    alt="Future Improvements"
   />
 </div>
 
 <ul>
-  <li>Automated regime-switching model selection</li>
-  <li>Probabilistic forecasting with confidence bands</li>
-  <li>Model explainability dashboards</li>
-  <li>Event-aware forecasting (earnings, macro releases)</li>
-  <li>Longer-horizon evaluation under sustained volatility</li>
+  <li>Automated regime-switching model selection because the market refuses to behave consistently</li>
+  <li>Probabilistic forecasting with confidence bands, aka “maybe it works, maybe it doesn’t”</li>
+  <li>Model explainability dashboards so you can see exactly why your predictions humiliated you</li>
+  <li>Event-aware forecasting (earnings, macro releases) because markets love throwing curveballs</li>
+  <li>Longer-horizon evaluation under sustained volatility for when chaos lasts more than a coffee break</li>
 </ul>
 
 <p>
 Markets evolve.<br>
-This system is designed to evolve — or get exposed trying.
+This system is built to evolve right alongside — or spectacularly fail while trying
 </p>
+
+<br>
 
 <p align="center" style="opacity: 0.7;">
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
@@ -339,18 +342,19 @@ This system is designed to evolve — or get exposed trying.
 <!-- Footnotes / Final Notes -->
 <div align="center">
   <img
-    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Final+Notes%3A+legal+department+made+me+write+this"
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Final+Notes:+Yes,+we+wrote+this+because+the+lawyers+insisted.;No,+it+won't+save+your+trades."
+    alt="Final Notes"
   />
 </div>
 
 <ul>
   <li><b>Not financial advice.</b> Never was. Never will be.</li>
-  <li>If a model fails — that’s the point.</li>
-  <li>If it works — assume regime change is coming.</li>
-  <li>Built to expose weaknesses, not sell hopium.</li>
+  <li>If a model fails, congratulations, it’s doing its job</li>
+  <li>If it works, brace yourself, the market just changed the rules</li>
+  <li>Built to expose weaknesses, not sell hopium or false hope</li>
 </ul>
 
 <p align="center">
   <b>You reached the end.</b><br>
-  <i>Your portfolio may still suffer — at least your system won’t lie about why.</i>
+  <i>Your portfolio may still suffer, but at least your system tells the brutal truth</i>
 </p>
