@@ -1,230 +1,339 @@
-<h1 align="center">📈 AI Stock Market Forecasting & Analytics</h1>
-
----
-
-Problem Statement ❗
-
-Financial markets are highly volatile and influenced by numerous unpredictable factors.
-Traditional forecasting methods struggle to capture nonlinear patterns, regime changes, and sudden anomalies in stock prices.
-
-The challenge:
-
-Develop an AI-driven system that can analyze historical stock market data, detect anomalies, identify market regimes, and generate accurate multi-model forecasts for major technology stocks.
-
-The goal of this project is to build a complete stock forecasting ecosystem that leverages machine learning, deep learning, and statistical modeling to help analysts and retail investors make data-driven decisions.
-
----
-
-# Overview 📊
-
-This project provides a full AI-powered stock forecasting platform, combining:
-  - A Streamlit web application for interactive forecasting
-  - A robust data analysis pipeline for feature engineering, ML model training, and statistical analysis
-
-Stocks covered include:
-
-  i. AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA and,
-  
-  ii. Major tech giants like AMD, NFLX, INTC, QCOM, AVGO, CRM, ORCL, PYPL, etc.
-
-The system offers forecasting, anomaly detection, market regime clustering, and deep insights through charts, metrics, and multi-model evaluation.
-
----
-
-# Features ⚡
-
-### 📉 1. Market Analysis & Visualization
-
-  - Price trends with SMA-50, SMA-200
-  - Candlestick-style line charts
-  - Volume overlay
-  - Daily returns distribution
-  - Rolling 30-day volatility
-  - Cumulative returns (Buy & Hold)
-
-### 🔮 2. AI Forecasting (10–180 days)
-
-  - Prophet forecasting
-  - LSTM autoregressive predictions
-  - Future predictions shown via Plotly
-  - Export forecast CSV
-
-### 🤖 3. Machine Learning Models (6 Models)
-
-  - Available in the web app:
-      a. ARIMA
-
-      b. Prophet
-
-      c. Random Forest Regressor
-
-      d. XGBoost Regressor
-
-      e. K-Means Clustering
-
-      f. Isolation Forest (Anomaly Detection)
-
-  - Available in the offline pipeline:
-
-      a. Linear Regression, Ridge, Lasso
-
-      b. LightGBM
-
-      c. MLP Neural Network
-
-      d. Wide & Deep Network
-
-      e. SARIMA
-
-      f. PCA & Gaussian Mixture Models
-
-### 🧠 4. Deep Learning Models
-
-  - LSTM (Sequential)
-
-  - GRU
-
-  - Keras Dense Network
-
-  - Wide & Deep Neural Network
-
-### 🚨 5. Anomaly Detection
-
-  - Isolation Forest detects flash crashes, extreme returns, or irregular volume spikes
-
-  - Heatmaps of anomalous months
-
-### 🔍 6. Market Regime Detection
-
-  - KMeans clusters identify: Bull market, Bear market, Sideways consolidation, High-volatility regimes.
-
-### 📈 7. Backtesting & Model Evaluation
-
-  - Metrics include: MAE, RMSE, MAPE, R² Score, Direction Accuracy, Automatically identifies Best Model.
-
-### 🗂 8. Full Data Engineering Pipeline
-
-  - In the offline script (data_analysis_pipeline.py):
-
-    - Cleaning missing OHLCV
-
-    - Feature engineering
-
-    - Lag features
-
-    - Momentum indicators
-
-    - Volatility features
-
-    - Market position metrics
-
-    - Exporting cleaned dataset
-
-### 🎛️ 9. Interactive Filters
-
-  Choose: Stock group, Ticker, Lookback window, Forecast horizon
- 
----
-
-# Technologies Used 🛠️
-
-### 🐍 Python Libraries
-  - Streamlit
-  - Pandas, NumPy
-  - Plotly
-  - Scikit-Learn
-  - Prophet
-  - pmdarima
-  - LightGBM
-  - XGBoost
-  - TensorFlow/Keras
-  - yfinance
-  - Statsmodels
-  - PCA, GMM
-  - stumpy (pattern detection)
-
-### 📊 Visualization
-  - Plotly (live charts)
-  - Matplotlib, Seaborn (offline pipeline)
-
-### 🧠 Machine Learning & Deep Learning
-  - Regression models
-  - Gradient boosting
-  - Neural networks
-  - LSTM / GRU
-  - Clustering
-  - Isolation Forest
-    
----
-
-# Installation 🧩
-
-```bash
-git clone https://github.com/YourUsername/AI-Stock-Forecaster.git
-cd AI-Stock-Forecaster
-pip install -r requirements.txt
-```
-
----
-
-# Data Requirements 📂
-
-- Anime Dataset: major-tech-stock-2019-2024.csv from kaggle and yfinance python library
-
-- Key Columns: `date`, `open`, `high`, `low`, `close`, `adj close`, `volume`, `ticker`
-
-### 🧠 Feature Engineering Includes:
-- Creating Date Columns: `Year`, `Month`, `Day`, `Day of Week`
-- Creating Columns: `Daily return`, `MA (for 7, 30 & 90 days)`,`Volatility`,`Lag close`,`Momentum`,`Price Position`,`Volume_MA`,`Volume Ratio`
-
----
-
-# Usage Guide 🚀
-
- **Run App**:  
-  ```bash
-streamlit run analysis.py
-  ```
- ### 📂 Explore Tabs in the App
-  - Overview — Price, volume, volatility, returns
-  - Raw Data — Download historical data
-  - Time Series + ML — Train 6 models
-  - Neural Networks — Train LSTM/GRU
-  - Performance Metrics — Compare all models
-  - AI Forecast — Predict next 10–180 days
-
-### 🧪 Train Models
-  - Click the training buttons inside each tab:
-  - “Train All 6 Models”
-  - “Train LSTM + GRU”
-  - Results are cached for speed.
-
----
-
-# Limitations ⚠️
-  - Forecast accuracy decreases during high-volatility periods.
-  - Deep learning models require ~50+ days of lookback to work effectively.
-  - Prophet seasonal components may oversmooth short-term volatility.
-  - Isolation Forest may mark false anomalies depending on contamination rate.
-  - Does not include macroeconomic indicators (future improvement).
-
----
-
-# Future Improvements 🔮
-  - Add Temporal Fusion Transformer (TFT)
-  - Add DeepAR or N-BEATS for long-horizon forecasting
-  - Integrate news sentiment/LLM embeddings
-  - Deploy app to AWS/Streamlit Cloud
-  - Add portfolio risk metrics (VaR, CVaR, Sharpe optimizer)
-  - Implement Reinforcement Learning trading agent
-
----
-
-# Notes 📝
-  - Cached models stored automatically using Streamlit session state
-  - Forecasting uses business days only
-  - UI is fully responsive with neon-dark theme
-
----
-- 🔐 Implement user login to save preferences & personalized dashboards.
-  
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins:ital,wght@1,700&weight=700&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=950&height=160&multiline=true&repeat=false&lines=Project+crashed.+Motivation+crashed+harder.;Coffee+spilled.+Code+broke.;Out+of+chaos,+a+forecasting+beast+emerged.;So+naturally,+we+built+something+that+might+survive+live+markets."
+    alt="Course Project Chaos Origin"
+  />
+</div>
+
+<br>
+
+<div align="center">
+  <b><i>Magnificent 7+ AI Stock Forecasting System</i></b><br><br>
+  <b><i>A forecasting pipeline daring enough to face live markets — and lose with dignity.</i></b><br><br>
+  <b><i>One repository. One slightly delusional idea.</i></b><br>
+  <b><i>Two execution personalities: <strike>naïve hope</strike> and cold, hard Python.</i></b><br>
+  <b><i>Static Kaggle data for research. Live yfinance data for public embarrassment.</i></b>
+</div>
+
+<br>
+
+<div align="center" style="margin: 2.5rem 0;">
+  <a href="https://stocksnews.streamlit.app/" target="_blank" rel="noopener noreferrer">
+    <img 
+      src="https://img.shields.io/badge/Live%20Forecast-Open%20Dashboard-brightgreen?style=for-the-badge&logo=streamlit&logoColor=white&color=00CC88" 
+      alt="Live Forecast"
+    />
+  </a>
+  <br><br>
+  <p style="font-size: 1.15rem; font-weight: 600;">
+    Watch the models duke it out with reality → <a href="https://stocksnews.streamlit.app/" target="_blank">Streamlit App</a>
+  </p>
+  <p style="font-size: 0.9rem; opacity: 0.85;">
+    No login. No magic screenshots. Just live prices, live chaos, and zero excuses.
+  </p>
+</div>
+
+<br>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Problem Statement -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins:ital,wght@1,700&weight=700&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=950&height=160&multiline=true&repeat=false&lines=So+here's+the+headache+that+forced+me+to+build+this+beast...;Because+ignoring+it+would've+been...+irresponsible."
+    alt="Project Headache Trigger"
+  />
+</div>
+
+<p>
+Most projects stop at <b>pretty charts</b>.<br>
+Most notebooks stop at <b>impressive metrics</b>.<br><br>
+
+But very few dare to ask the real questions:
+</p>
+
+<ul>
+  <li>Which model survives sudden market tantrums?</li>
+  <li>Which one folds under volatility like my first attempt at coding?</li>
+  <li>Which model looks perfect until <strike>live data</strike> reality crashes the party?</li>
+</ul>
+
+<p>
+This project exists to answer those questions —  
+<b>outside cozy notebooks</b>,  
+<b>in the unforgiving market arena</b>,  
+<b>with zero excuses</b>.
+</p>
+
+<br> 
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Overview -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=So+the+Magnificent+7+stopped+hiding+behind+notebooks...;ABecause+pretending+labs+equal+markets+is+cute...+until+live+models+tell+the+truth."
+    alt="Project Overview"
+  />
+</div>
+
+
+<p>
+The <b>Magnificent 7+ AI Stock Forecasting System</b> is a dual-mode forecasting pipeline
+designed to answer one uncomfortable question:
+</p>
+
+<p align="center">
+  <b><i>What actually survives when models leave notebooks and face live markets?</i></b>
+</p>
+
+<p>
+It seamlessly combines offline experimentation with live forecasting, allowing model performance
+to be evaluated under <b>real volatility</b>, <b>real noise</b>, and <b>real consequences</b>.
+</p>
+
+<p>
+No curve-fitting theatrics.<br>
+No cherry-picked screenshots.<br>
+Just models, markets, and receipts.
+</p>
+
+<br>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Architecture -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=25&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=So+all+the+chaos+had+to+live+under+one+roof...;Because+splitting+personalities+without+a+plan+would%E2%80%99ve+been...+catastrophic."
+    alt="Project Architecture"
+  />
+</div>
+
+<div align="left"><b>🧠 Mode 1 — Research & Experimentation (Jupyter Notebook)</b></div>
+
+<ul>
+  <li>Historical <b>Kaggle stock datasets</b></li>
+  <li>Exploratory Data Analysis & financial statistics</li>
+  <li>Feature engineering with solid justification</li>
+  <li>Market regime detection</li>
+  <li>Model benchmarking without cherry-picking</li>
+</ul>
+
+<div>
+Built for <b>reproducibility</b>.<br>
+Not vibes.
+</div>
+
+<div align="right"><b>🚀 Mode 2 — Live Forecasting Engine (Streamlit)</b></div>
+
+<ul>
+  <li>Live prices via <b>yfinance</b></li>
+  <li>On-demand model execution</li>
+  <li>Rolling forecasts & backtesting</li>
+  <li>Interactive model comparison (models roast each other)</li>
+  <li>Downloadable predictions (for receipts)</li>
+</ul>
+
+<div>
+Built for <b>real data</b>.<br>
+Not historical comfort blankets.
+</div>
+
+<br>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Models Used -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Models+Used%3A+trust+issues+included"
+  />
+</div>
+
+<p><b>Time Series</b></p>
+<ul>
+  <li>ARIMA</li>
+  <li>Prophet (<i>with custom seasonality, not blind faith</i>)</li>
+</ul>
+
+<p><b>Machine Learning</b></p>
+<ul>
+  <li>Random Forest Regressor</li>
+  <li>XGBoost</li>
+  <li>Lag-based supervised pipelines</li>
+</ul>
+
+<p><b>Deep Learning</b></p>
+<ul>
+  <li>LSTM</li>
+  <li>GRU</li>
+  <li>Sliding-window sequence forecasting</li>
+</ul>
+
+<p><b>Unsupervised Learning</b></p>
+<ul>
+  <li>K-Means (market regime clustering)</li>
+  <li>Isolation Forest (anomaly detection)</li>
+</ul>
+
+<p>
+No single model is trusted.<br>
+They all <b>earn</b> their credibility — or lose it publicly.
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Features -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Features%3A+what+this+system+actually+does"
+  />
+</div>
+
+<ul>
+  <li>Dual execution modes: <b>offline research</b> and <b>live forecasting</b></li>
+  <li>Multiple model families competing on identical data</li>
+  <li>Rolling forecasts instead of one-shot predictions</li>
+  <li>Backtesting with consistent, comparable metrics</li>
+  <li>Regime-aware analysis (markets are not stationary, unfortunately)</li>
+  <li>Interactive dashboard for side-by-side model evaluation</li>
+  <li>Downloadable forecasts for accountability and post-mortems</li>
+</ul>
+
+<p>
+If a model fails, it fails <b>publicly</b>.<br>
+If it succeeds, it must keep doing so.
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Technologies Used -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Technologies+Used%3A+chosen+with+intent%2C+not+hype"
+  />
+</div>
+
+<ul>
+  <li><b>Python</b> — because production matters</li>
+  <li><b>Pandas / NumPy</b> — data sanity enforcement</li>
+  <li><b>Scikit-learn</b> — classical ML that still holds up</li>
+  <li><b>Statsmodels</b> — ARIMA without magic</li>
+  <li><b>Prophet</b> — controlled seasonality, not blind optimism</li>
+  <li><b>TensorFlow / Keras</b> — deep learning where it earns its keep</li>
+  <li><b>XGBoost</b> — because trees still win fights</li>
+  <li><b>Plotly</b> — interactive visuals with accountability</li>
+  <li><b>Streamlit</b> — deployment without pretending this is a startup</li>
+  <li><b>yfinance</b> — live data, live consequences</li>
+</ul>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Data Requirements -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Data+Requirements%3A+no+excuses+edition"
+  />
+</div>
+
+<p>
+This system intentionally avoids complex dependencies.
+</p>
+
+<ul>
+  <li><b>Offline Mode:</b> Historical Kaggle stock datasets</li>
+  <li><b>Live Mode:</b> Real-time OHLC data via <b>yfinance</b></li>
+</ul>
+
+<p>
+No databases.<br>
+No API keys.<br>
+No scraped nonsense.<br>
+Just prices and time.
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- User Guide -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=User+Guide%3A+how+to+run+this+without+breaking+it"
+  />
+</div>
+
+<ol>
+  <li>Install dependencies using <b>pip install -r requirements.txt</b></li>
+  <li>Launch the app: <b>streamlit run app.py</b></li>
+  <li>Select stocks and forecasting horizon</li>
+  <li>Run models and compare forecasts live</li>
+  <li>Download predictions if you want proof later</li>
+</ol>
+
+<p>
+That’s it.<br>
+If it breaks, the market probably did that — not the code.
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Future Improvements -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Future+Improvements%3A+things+markets+will+force+eventually"
+  />
+</div>
+
+<ul>
+  <li>Automated regime-switching model selection</li>
+  <li>Probabilistic forecasting with confidence bands</li>
+  <li>Model explainability dashboards</li>
+  <li>Event-aware forecasting (earnings, macro releases)</li>
+  <li>Longer-horizon evaluation under sustained volatility</li>
+</ul>
+
+<p>
+Markets evolve.<br>
+This system is designed to evolve — or get exposed trying.
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
+<!-- Footnotes / Final Notes -->
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00FFA3&center=true&vCenter=true&width=1000&height=120&multiline=true&repeat=false&lines=Final+Notes%3A+legal+department+made+me+write+this"
+  />
+</div>
+
+<ul>
+  <li><b>Not financial advice.</b> Never was. Never will be.</li>
+  <li>If a model fails — that’s the point.</li>
+  <li>If it works — assume regime change is coming.</li>
+  <li>Built to expose weaknesses, not sell hopium.</li>
+</ul>
+
+<p align="center">
+  <b>You reached the end.</b><br>
+  <i>Your portfolio may still suffer — at least your system won’t lie about why.</i>
+</p>
