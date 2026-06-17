@@ -339,6 +339,70 @@ This system is built to evolve right alongside — or spectacularly fail while t
 • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
 </p>
 
+<!-- Contributing -->
+
+<div align="center">
+  <img
+    src="https://readme-typing-svg.demolab.com?font=Poppins&size=28&duration=4000&pause=1200&color=00CC88&center=true&vCenter=true&width=1000&height=140&multiline=true&repeat=false&lines=Apparently+one+developer+versus+the+market+wasn't+a+fair+fight...;So+the+doors+are+open+for+fellow+chaos+engineers."
+    alt="Contributing"
+  />
+</div>
+
+<p>
+Contributions are welcome.
+</p>
+
+<p>
+Whether you're fixing bugs, improving documentation, optimizing performance,
+adding forecasting models, enhancing visualizations, or discovering entirely new ways for the market to humble us,
+there is always something to improve.
+</p>
+
+<p>
+Some contribution ideas:
+</p>
+
+<ul>
+  <li>Bug fixes and stability improvements</li>
+  <li>UI/UX enhancements for the Streamlit dashboard</li>
+  <li>Additional forecasting and machine learning models</li>
+  <li>Performance optimization and code refactoring</li>
+  <li>Testing and validation improvements</li>
+  <li>Documentation improvements</li>
+  <li>New visualizations and analytics features</li>
+</ul>
+
+<p>
+To contribute:
+</p>
+
+<ol>
+  <li>Fork the repository</li>
+  <li>Create a new branch</li>
+  <li>Implement your changes</li>
+  <li>Test your work</li>
+  <li>Submit a Pull Request</li>
+</ol>
+
+<p>
+Before getting started, please read <b>CONTRIBUTING.md</b> for detailed setup instructions,
+coding standards, branch naming conventions, and pull request guidelines.
+</p>
+
+<p align="center">
+  <b>Every contribution helps.</b><br>
+  <i>Even proving a model wrong is still valuable research.</i>
+</p>
+
+<p align="center">
+  ⭐ <b>If you find this project useful, consider giving it a star.</b><br>
+  <i>It won't improve forecast accuracy, but it does improve developer morale.</i>
+</p>
+
+<p align="center" style="opacity: 0.7;">
+• • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • • •
+</p>
+
 <!-- Footnotes / Final Notes -->
 <div align="center">
   <img
