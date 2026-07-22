@@ -20,6 +20,15 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 # Stooq data source
 import pandas_datareader.data as web
+from urllib.error import HTTPError
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 # ==================== PAGE CONFIG & THEME ====================
 st.set_page_config(page_title="Magnificent 7+ AI Forecaster Pro", page_icon="🤖", layout="wide", initial_sidebar_state="expanded")
@@ -72,8 +81,14 @@ def load_data(symbol):
             df = df.rename(columns={'Date':'Date', 'Open':'Open', 'High':'High', 'Low':'Low', 'Close':'Close', 'Volume':'Volume'})
             df = df.sort_values('Date').reset_index(drop=True)
             return df
-    except:
-        pass
+    except NotImplementedError as e:
+        logger.error(f"Stooq data source is not supported: {e}")
+        st.warning("Primary data source is unavailable. Trying backup data source...")
+
+    except Exception as e:
+        logger.exception(f"Unexpected error while fetching data for {symbol}: {e}")    
+     
+        
 
     # Fallback: direct CSV from Stooq
     try:
@@ -87,8 +102,11 @@ def load_data(symbol):
             })
             df = temp[['Date','Open','High','Low','Close','Volume']].sort_values('Date').reset_index(drop=True)
             return df
-    except:
-        pass
+    except HTTPError as e:
+        logger.error(f"Backup CSV URL returned an HTTP error: {e}")
+
+    except Exception as e:
+        logger.exception(f"Unexpected error while fetching backup CSV for {symbol}: {e}")
 
     return pd.DataFrame()
 
@@ -144,7 +162,8 @@ try:
     info = yf.Ticker(ticker).info
     with col5: st.metric("Market Cap", f"${info.get('marketCap',0)/1e12:.2f}T")
     with col6: st.metric("P/E Ratio", f"{info.get('trailingPE','N/A'):.2f}" if info.get('trailingPE') else "N/A")
-except:
+except Exception as e:
+    logger.exception(f"Unable to fetch company info for {ticker}: {e}")
     with col5: st.metric("Market Cap", "N/A")
     with col6: st.metric("P/E Ratio", "N/A")
 
