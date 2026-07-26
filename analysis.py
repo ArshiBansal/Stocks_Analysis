@@ -6,6 +6,13 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import yfinance as yf  # kept for .info only (optional)
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Models
 from statsmodels.tsa.arima.model import ARIMA
@@ -29,6 +36,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+import requests
+from pandas_datareader._utils import RemoteDataError
 
 # ==================== PAGE CONFIG & THEME ====================
 st.set_page_config(page_title="Magnificent 7+ AI Forecaster Pro", page_icon="🤖", layout="wide", initial_sidebar_state="expanded")
@@ -64,14 +73,15 @@ if st.sidebar.button("Clear Cache & Full Refresh", use_container_width=True):
     for key in keys_to_remove:
         if key in st.session_state:
             del st.session_state[key]
+    logger.info("Cache cleared for ticker %s", ticker)
     st.rerun()
 
 # ==================== DATA LOADER – Stooq (most reliable for Streamlit Cloud) ====================
 @st.cache_data(ttl=3600, show_spinner="Fetching latest data from Stooq...")
 def load_data(symbol):
     df = pd.DataFrame()
+    # Try pandas_datareader first
     try:
-        # Try pandas_datareader first
         stooq_symbol = f"{symbol}.US"
         end = datetime.now()
         start = end - timedelta(days=5*365 + 150)
@@ -80,15 +90,17 @@ def load_data(symbol):
             df = df.reset_index()
             df = df.rename(columns={'Date':'Date', 'Open':'Open', 'High':'High', 'Low':'Low', 'Close':'Close', 'Volume':'Volume'})
             df = df.sort_values('Date').reset_index(drop=True)
+            logger.info("Data loaded via pandas-datareader for %s", symbol)
             return df
-    except NotImplementedError as e:
-        logger.error(f"Stooq data source is not supported: {e}")
-        st.warning("Primary data source is unavailable. Trying backup data source...")
+except NotImplementedError as e:
+    logger.error(f"Stooq data source is not supported: {e}")
+    st.warning("Primary data source is unavailable. Trying backup data source...")
 
-    except Exception as e:
-        logger.exception(f"Unexpected error while fetching data for {symbol}: {e}")    
-     
-        
+except (requests.exceptions.RequestException, RemoteDataError, ValueError, KeyError) as e:
+    logger.warning("pandas-datareader failed for %s: %s. Trying CSV fallback.", symbol, e)
+
+except Exception as e:
+    logger.exception(f"Unexpected error while fetching data for {symbol}: {e}")
 
     # Fallback: direct CSV from Stooq
     try:
@@ -101,20 +113,28 @@ def load_data(symbol):
                 '<LOW>':'Low', '<CLOSE>':'Close', '<VOL>':'Volume'
             })
             df = temp[['Date','Open','High','Low','Close','Volume']].sort_values('Date').reset_index(drop=True)
+            logger.info("Data loaded via CSV fallback for %s", symbol)
             return df
-    except HTTPError as e:
-        logger.error(f"Backup CSV URL returned an HTTP error: {e}")
+except HTTPError as e:
+    logger.error(f"Backup CSV URL returned an HTTP error: {e}")
 
-    except Exception as e:
-        logger.exception(f"Unexpected error while fetching backup CSV for {symbol}: {e}")
+except (pd.errors.EmptyDataError, pd.errors.ParserError, OSError) as e:
+    logger.error("CSV fallback also failed for %s: %s", symbol, e)
 
+except Exception as e:
+    logger.exception(f"Unexpected error while fetching backup CSV for {symbol}: {e}")
+
+logger.error("All data sources exhausted for %s", symbol)
+return pd.DataFrame()
+    logger.error("All data sources exhausted for %s", symbol)
     return pd.DataFrame()
 
 # Load data
 df = load_data(ticker)
 
 if df.empty:
-    st.error("No data could be fetched from Stooq. Try another ticker or check your internet.")
+    st.error("Unable to fetch historical stock data. Please verify the ticker symbol or try again later.")
+    logger.warning("Empty DataFrame for %s – stopping app.", ticker)
     st.stop()
 
 # Remove timezone if any
@@ -162,8 +182,16 @@ try:
     info = yf.Ticker(ticker).info
     with col5: st.metric("Market Cap", f"${info.get('marketCap',0)/1e12:.2f}T")
     with col6: st.metric("P/E Ratio", f"{info.get('trailingPE','N/A'):.2f}" if info.get('trailingPE') else "N/A")
+except (ValueError, KeyError, ConnectionError) as e:
+    logger.warning("yfinance info unavailable for %s: %s", ticker, e)
+
 except Exception as e:
     logger.exception(f"Unable to fetch company info for {ticker}: {e}")
+
+with col5:
+    st.metric("Market Cap", "N/A")
+with col6:
+    st.metric("P/E Ratio", "N/A")
     with col5: st.metric("Market Cap", "N/A")
     with col6: st.metric("P/E Ratio", "N/A")
 
@@ -224,31 +252,42 @@ with tab3:
             
             # ARIMA
             with st.expander("1. ARIMA"):
-                series = df['Close']
-                model = ARIMA(series, order=(5,1,0))
-                fitted = model.fit()
-                steps = len(series) // 5
-                pred = fitted.forecast(steps=steps)
-                actual = series.iloc[-steps:]
-                backtest_data['ARIMA'] = (df['Date'].iloc[-steps:].values, actual.values, pred.values)
-                models['ARIMA'] = fitted
-                st.success("ARIMA trained")
+                try:
+                    series = df['Close']
+                    model = ARIMA(series, order=(5,1,0))
+                    fitted = model.fit()
+                    steps = len(series) // 5
+                    pred = fitted.forecast(steps=steps)
+                    actual = series.iloc[-steps:]
+                    backtest_data['ARIMA'] = (df['Date'].iloc[-steps:].values, actual.values, pred.values)
+                    models['ARIMA'] = fitted
+                    st.success("ARIMA trained")
+                    logger.info("ARIMA model trained for %s", ticker)
+                # Keep broad exception: a single model failure should not stop the remaining models
+                except Exception as e:
+                    logger.exception("ARIMA training failed for %s: %s", ticker, e)
+                    st.error("ARIMA model could not be trained. The time series may be too short or contain irregularities. Skipping this model.")
 
             # Prophet
             with st.expander("2. Prophet"):
-                p_df = df[['Date', 'Close']].copy()
-                p_df.columns = ['ds', 'y']
-                p_df['ds'] = pd.to_datetime(p_df['ds']).dt.tz_localize(None)
-                m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=False)
-                m.add_seasonality(name='monthly', period=30.5, fourier_order=5)
-                m.fit(p_df)
-                future = m.make_future_dataframe(periods=0)
-                fc = m.predict(future)
-                pred = fc['yhat'].values[-len(df)//5:]
-                actual = df['Close'].iloc[-len(pred):]
-                backtest_data['Prophet'] = (df['Date'].iloc[-len(pred):].values, actual.values, pred)
-                models['Prophet'] = m
-                st.success("Prophet trained")
+                try:
+                    p_df = df[['Date', 'Close']].copy()
+                    p_df.columns = ['ds', 'y']
+                    p_df['ds'] = pd.to_datetime(p_df['ds']).dt.tz_localize(None)
+                    m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=False)
+                    m.add_seasonality(name='monthly', period=30.5, fourier_order=5)
+                    m.fit(p_df)
+                    future = m.make_future_dataframe(periods=0)
+                    fc = m.predict(future)
+                    pred = fc['yhat'].values[-len(df)//5:]
+                    actual = df['Close'].iloc[-len(pred):]
+                    backtest_data['Prophet'] = (df['Date'].iloc[-len(pred):].values, actual.values, pred)
+                    models['Prophet'] = m
+                    st.success("Prophet trained")
+                    logger.info("Prophet model trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("Prophet training failed for %s: %s", ticker, e)
+                    st.error("Prophet model could not be trained. This may be due to insufficient data or date parsing issues. Skipping this model.")
 
             # Lagged features for ML models
             lagged = pd.DataFrame({f'lag_{i}': df['Close'].shift(i) for i in range(1,21)})
@@ -263,32 +302,49 @@ with tab3:
 
             # Random Forest
             with st.expander("3. Random Forest"):
-                rf = RandomForestRegressor(n_estimators=300, n_jobs=-1, random_state=42)
-                rf.fit(X_train, y_train)
-                pred = rf.predict(X_test)
-                backtest_data['Random Forest'] = (test_dates, y_test.values, pred)
-                models['Random Forest'] = rf
-                st.success("RF trained")
+                try:
+                    rf = RandomForestRegressor(n_estimators=300, n_jobs=-1, random_state=42)
+                    rf.fit(X_train, y_train)
+                    pred = rf.predict(X_test)
+                    backtest_data['Random Forest'] = (test_dates, y_test.values, pred)
+                    models['Random Forest'] = rf
+                    st.success("RF trained")
+                    logger.info("Random Forest trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("Random Forest training failed for %s: %s", ticker, e)
+                    st.error("Random Forest model could not be trained. Skipping this model.")
 
             # XGBoost
             with st.expander("4. XGBoost"):
-                xgb = XGBRegressor(n_estimators=500, learning_rate=0.05, n_jobs=-1, random_state=42)
-                xgb.fit(X_train, y_train)
-                pred = xgb.predict(X_test)
-                backtest_data['XGBoost'] = (test_dates, y_test.values, pred)
-                models['XGBoost'] = xgb
-                st.success("XGBoost trained")
+                try:
+                    xgb = XGBRegressor(n_estimators=500, learning_rate=0.05, n_jobs=-1, random_state=42)
+                    xgb.fit(X_train, y_train)
+                    pred = xgb.predict(X_test)
+                    backtest_data['XGBoost'] = (test_dates, y_test.values, pred)
+                    models['XGBoost'] = xgb
+                    st.success("XGBoost trained")
+                    logger.info("XGBoost trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("XGBoost training failed for %s: %s", ticker, e)
+                    st.error("XGBoost model could not be trained. Skipping this model.")
 
             # Unsupervised
             with st.expander("5-6. K-Means & Isolation Forest"):
-                features = df[['Close', 'Volume', 'Return', 'Volatility_30d']].fillna(0)
-                models['KMeans'] = KMeans(n_clusters=4, random_state=42, n_init=10).fit(features)
-                models['IsolationForest'] = IsolationForest(contamination=0.02, random_state=42).fit(features)
-                st.success("Unsupervised trained")
+                try:
+                    features = df[['Close', 'Volume', 'Return', 'Volatility_30d']].fillna(0)
+                    models['KMeans'] = KMeans(n_clusters=4, random_state=42, n_init=10).fit(features)
+                    models['IsolationForest'] = IsolationForest(contamination=0.02, random_state=42).fit(features)
+                    st.success("Unsupervised trained")
+                    logger.info("KMeans and IsolationForest trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("Unsupervised model training failed for %s: %s", ticker, e)
+                    st.error("K-Means / Isolation Forest models could not be trained. Skipping.")
 
             st.session_state.models_ts_ml = models
             st.session_state.backtest_ts_ml = backtest_data
-            st.success("All 6 models trained!")
+            n_trained = len(models)
+            st.success(f"{n_trained} model(s) trained!")
+            logger.info("Training complete for %s: %d/6 models succeeded.", ticker, n_trained)
 
     if st.session_state.get("backtest_ts_ml"):
         model_name = st.selectbox("Select Model", [""] + list(st.session_state.backtest_ts_ml.keys()), key="tsml")
@@ -326,48 +382,69 @@ with tab4:
                     y.append(data[i])
                 return np.array(X), np.array(y)
 
-            X, y = create_dataset(scaled, lookback_days)
-            X = X.reshape((X.shape[0], X.shape[1], 1))
-            split = int(0.8 * len(X))
-            test_dates = df['Date'].iloc[split + lookback_days:].values
+            try:
+                X, y = create_dataset(scaled, lookback_days)
+                X = X.reshape((X.shape[0], X.shape[1], 1))
+                split = int(0.8 * len(X))
+                test_dates = df['Date'].iloc[split + lookback_days:].values
+            # Keep broad exception: dataset creation can fail for many reasons (short data, bad lookback, etc.)
+            except Exception as e:
+                logger.exception("Failed to create deep learning dataset for %s: %s", ticker, e)
+                st.error("Unable to prepare deep learning data. The lookback window may be too large for the available data. Try reducing the lookback window in the sidebar.")
+                st.stop()
+
             backtest_dl = {}
 
+            # LSTM
             with st.expander("LSTM"):
-                model = Sequential([
-                    LSTM(100, return_sequences=True, input_shape=(lookback_days,1)),
-                    Dropout(0.3),
-                    LSTM(100),
-                    Dropout(0.3),
-                    Dense(1)
-                ])
-                model.compile(optimizer='adam', loss='mse')
-                model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
-                pred_scaled = model.predict(X[split:], verbose=0)
-                pred = scaler.inverse_transform(pred_scaled).flatten()
-                actual = scaler.inverse_transform(y[split:]).flatten()
-                backtest_dl['LSTM'] = (test_dates, actual, pred)
-                st.session_state.lstm_model = (model, scaler)
-                st.success("LSTM trained")
+                try:
+                    lstm_model = Sequential([
+                        LSTM(100, return_sequences=True, input_shape=(lookback_days,1)),
+                        Dropout(0.3),
+                        LSTM(100),
+                        Dropout(0.3),
+                        Dense(1)
+                    ])
+                    lstm_model.compile(optimizer='adam', loss='mse')
+                    lstm_model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
+                    pred_scaled = lstm_model.predict(X[split:], verbose=0)
+                    pred = scaler.inverse_transform(pred_scaled).flatten()
+                    actual = scaler.inverse_transform(y[split:]).flatten()
+                    backtest_dl['LSTM'] = (test_dates, actual, pred)
+                    st.session_state.lstm_model = (lstm_model, scaler)
+                    st.success("LSTM trained")
+                    logger.info("LSTM trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("LSTM training failed for %s: %s", ticker, e)
+                    st.error("LSTM model could not be trained. This may be due to insufficient data or numerical instability. Skipping LSTM.")
 
+            # GRU
             with st.expander("GRU"):
-                model = Sequential([
-                    GRU(100, return_sequences=True, input_shape=(lookback_days,1)),
-                    Dropout(0.3),
-                    GRU(100),
-                    Dropout(0.3),
-                    Dense(1)
-                ])
-                model.compile(optimizer='adam', loss='mse')
-                model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
-                pred_scaled = model.predict(X[split:], verbose=0)
-                pred = scaler.inverse_transform(pred_scaled).flatten()
-                actual = scaler.inverse_transform(y[split:]).flatten()
-                backtest_dl['GRU'] = (test_dates, actual, pred)
-                st.session_state.gru_model = (model, scaler)
-                st.success("GRU trained")
+                try:
+                    gru_model = Sequential([
+                        GRU(100, return_sequences=True, input_shape=(lookback_days,1)),
+                        Dropout(0.3),
+                        GRU(100),
+                        Dropout(0.3),
+                        Dense(1)
+                    ])
+                    gru_model.compile(optimizer='adam', loss='mse')
+                    gru_model.fit(X[:split], y[:split], epochs=50, batch_size=32, verbose=0, callbacks=[EarlyStopping(patience=10)])
+                    pred_scaled = gru_model.predict(X[split:], verbose=0)
+                    pred = scaler.inverse_transform(pred_scaled).flatten()
+                    actual = scaler.inverse_transform(y[split:]).flatten()
+                    backtest_dl['GRU'] = (test_dates, actual, pred)
+                    st.session_state.gru_model = (gru_model, scaler)
+                    st.success("GRU trained")
+                    logger.info("GRU trained for %s", ticker)
+                except Exception as e:
+                    logger.exception("GRU training failed for %s: %s", ticker, e)
+                    st.error("GRU model could not be trained. This may be due to insufficient data or numerical instability. Skipping GRU.")
 
             st.session_state.backtest_dl = backtest_dl
-            st.success("Deep learning models trained!")
+            n_dl = len(backtest_dl)
+            st.success(f"{n_dl} deep learning model(s) trained!")
+            logger.info("Deep learning training complete for %s: %d/2 models succeeded.", ticker, n_dl)
 
     if st.session_state.get("backtest_dl"):
         dl_model = st.selectbox("Select Model", [""] + list(st.session_state.backtest_dl.keys()), key="dl")
@@ -395,19 +472,22 @@ with tab5:
     metrics_list = []
 
     def add_metrics(name, actual, pred):
-        mae = mean_absolute_error(actual, pred)
-        rmse = np.sqrt(mean_squared_error(actual, pred))
-        mape = np.mean(np.abs((actual - pred) / (actual + 1e-8))) * 100
-        r2 = r2_score(actual, pred)
-        directional = np.mean(np.sign(np.diff(actual)) == np.sign(np.diff(pred))) * 100 if len(actual) > 1 else 0
-        metrics_list.append({
-            "Model": name,
-            "MAE": mae,
-            "RMSE": rmse,
-            "MAPE (%)": mape,
-            "R² Score": r2,
-            "Direction Accuracy (%)": directional
-        })
+        try:
+            mae = mean_absolute_error(actual, pred)
+            rmse = np.sqrt(mean_squared_error(actual, pred))
+            mape = np.mean(np.abs((actual - pred) / (actual + 1e-8))) * 100
+            r2 = r2_score(actual, pred)
+            directional = np.mean(np.sign(np.diff(actual)) == np.sign(np.diff(pred))) * 100 if len(actual) > 1 else 0
+            metrics_list.append({
+                "Model": name,
+                "MAE": mae,
+                "RMSE": rmse,
+                "MAPE (%)": mape,
+                "R² Score": r2,
+                "Direction Accuracy (%)": directional
+            })
+        except Exception as e:
+            logger.warning("Could not compute metrics for %s: %s", name, e)
 
     if st.session_state.get("backtest_ts_ml"):
         for name, (_, actual, pred) in st.session_state.backtest_ts_ml.items():
@@ -445,25 +525,33 @@ with tab6:
         fig.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name="Historical", line=dict(color="white", width=3)))
 
         if 'Prophet' in st.session_state.get("models_ts_ml", {}):
-            future = st.session_state.models_ts_ml['Prophet'].make_future_dataframe(periods=forecast_days, freq='B')
-            fc = st.session_state.models_ts_ml['Prophet'].predict(future)
-            prophet_pred = fc['yhat'][-forecast_days:].values
-            forecast_data["Prophet"] = np.round(prophet_pred, 2)
-            fig.add_trace(go.Scatter(x=future_dates, y=prophet_pred, name="Prophet", line=dict(color="#00d4ff", width=3)))
+            try:
+                future = st.session_state.models_ts_ml['Prophet'].make_future_dataframe(periods=forecast_days, freq='B')
+                fc = st.session_state.models_ts_ml['Prophet'].predict(future)
+                prophet_pred = fc['yhat'][-forecast_days:].values
+                forecast_data["Prophet"] = np.round(prophet_pred, 2)
+                fig.add_trace(go.Scatter(x=future_dates, y=prophet_pred, name="Prophet", line=dict(color="#00d4ff", width=3)))
+            except Exception as e:
+                logger.exception("Prophet forecast failed for %s: %s", ticker, e)
+                st.warning("Prophet forecast could not be generated. Skipping Prophet.")
 
         if st.session_state.get("lstm_model"):
-            model, scaler = st.session_state.lstm_model
-            last_seq = scaler.transform(df['Close'].values[-lookback_days:].reshape(-1,1))
-            preds = []
-            cur = last_seq.copy()
-            for _ in range(forecast_days):
-                p = model.predict(cur.reshape(1, lookback_days, 1), verbose=0)[0,0]
-                val = scaler.inverse_transform([[p]])[0,0]
-                preds.append(val)
-                cur = np.append(cur[1:], [[p]], axis=0)
-            lstm_pred = np.array(preds)
-            forecast_data["LSTM"] = np.round(lstm_pred, 2)
-            fig.add_trace(go.Scatter(x=future_dates, y=lstm_pred, name="LSTM", line=dict(color="#ff00aa", dash="dot", width=3)))
+            try:
+                model, scaler = st.session_state.lstm_model
+                last_seq = scaler.transform(df['Close'].values[-lookback_days:].reshape(-1,1))
+                preds = []
+                cur = last_seq.copy()
+                for _ in range(forecast_days):
+                    p = model.predict(cur.reshape(1, lookback_days, 1), verbose=0)[0,0]
+                    val = scaler.inverse_transform([[p]])[0,0]
+                    preds.append(val)
+                    cur = np.append(cur[1:], [[p]], axis=0)
+                lstm_pred = np.array(preds)
+                forecast_data["LSTM"] = np.round(lstm_pred, 2)
+                fig.add_trace(go.Scatter(x=future_dates, y=lstm_pred, name="LSTM", line=dict(color="#ff00aa", dash="dot", width=3)))
+            except Exception as e:
+                logger.exception("LSTM forecast failed for %s: %s", ticker, e)
+                st.warning("LSTM forecast could not be generated. Skipping LSTM.")
 
         fig.update_layout(template="plotly_dark", height=600, title=f"{ticker} — Multi-Model Forecast")
         st.plotly_chart(fig, use_container_width=True)
