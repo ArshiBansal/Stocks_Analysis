@@ -27,6 +27,15 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 # Stooq data source
 import pandas_datareader.data as web
+from urllib.error import HTTPError
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 import requests
 from pandas_datareader._utils import RemoteDataError
 
@@ -83,8 +92,15 @@ def load_data(symbol):
             df = df.sort_values('Date').reset_index(drop=True)
             logger.info("Data loaded via pandas-datareader for %s", symbol)
             return df
-    except (requests.exceptions.RequestException, RemoteDataError, ValueError, KeyError) as e:
-        logger.warning("pandas-datareader failed for %s: %s. Trying CSV fallback.", symbol, e)
+except NotImplementedError as e:
+    logger.error(f"Stooq data source is not supported: {e}")
+    st.warning("Primary data source is unavailable. Trying backup data source...")
+
+except (requests.exceptions.RequestException, RemoteDataError, ValueError, KeyError) as e:
+    logger.warning("pandas-datareader failed for %s: %s. Trying CSV fallback.", symbol, e)
+
+except Exception as e:
+    logger.exception(f"Unexpected error while fetching data for {symbol}: {e}")
 
     # Fallback: direct CSV from Stooq
     try:
@@ -99,9 +115,17 @@ def load_data(symbol):
             df = temp[['Date','Open','High','Low','Close','Volume']].sort_values('Date').reset_index(drop=True)
             logger.info("Data loaded via CSV fallback for %s", symbol)
             return df
-    except (pd.errors.EmptyDataError, pd.errors.ParserError, OSError) as e:
-        logger.error("CSV fallback also failed for %s: %s", symbol, e)
+except HTTPError as e:
+    logger.error(f"Backup CSV URL returned an HTTP error: {e}")
 
+except (pd.errors.EmptyDataError, pd.errors.ParserError, OSError) as e:
+    logger.error("CSV fallback also failed for %s: %s", symbol, e)
+
+except Exception as e:
+    logger.exception(f"Unexpected error while fetching backup CSV for {symbol}: {e}")
+
+logger.error("All data sources exhausted for %s", symbol)
+return pd.DataFrame()
     logger.error("All data sources exhausted for %s", symbol)
     return pd.DataFrame()
 
@@ -160,6 +184,14 @@ try:
     with col6: st.metric("P/E Ratio", f"{info.get('trailingPE','N/A'):.2f}" if info.get('trailingPE') else "N/A")
 except (ValueError, KeyError, ConnectionError) as e:
     logger.warning("yfinance info unavailable for %s: %s", ticker, e)
+
+except Exception as e:
+    logger.exception(f"Unable to fetch company info for {ticker}: {e}")
+
+with col5:
+    st.metric("Market Cap", "N/A")
+with col6:
+    st.metric("P/E Ratio", "N/A")
     with col5: st.metric("Market Cap", "N/A")
     with col6: st.metric("P/E Ratio", "N/A")
 
